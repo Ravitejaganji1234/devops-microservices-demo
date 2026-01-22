@@ -1,13 +1,18 @@
-FROM eclipse-temurin:21-jre
+FROM maven:3.9.6-eclipse-temurin-21
 
 WORKDIR /app
 
-COPY target/inventory-service-0.0.1-SNAPSHOT.jar app.jar
+COPY pom.xml /app/
 
-ENV SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/inventorydb?createDatabaseIfNotExist=true \
-    SPRING_DATASOURCE_USERNAME=root \
-    SPRING_DATASOURCE_PASSWORD=root
+RUN mvn -B dependency:resolve dependency:resolve-plugins
+COPY . .
+
+RUN mvn clean install -DskipTests
+
+ENV SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/inventorydb?createDatabaseIfNotExist=true
 
 EXPOSE 8081
 
-ENTRYPOINT ["java","-jar","app.jar"]
+RUN mv target/*.jar target/app.jar
+
+ENTRYPOINT [ "java","-jar","target/app.jar" ]
