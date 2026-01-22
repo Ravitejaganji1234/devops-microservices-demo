@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY     = "gcr.io/raviteja-demo"
+        REGISTRY = "us-east1-docker.pkg.dev/raviteja-demo/demo-app"
         IMAGE_TAG    = "${BUILD_NUMBER}"
         K8S_REPO_URL = "https://github.com/Ravitejaganji1234/microservices-k8s-manifests.git"
         K8S_BRANCH   = "main"
