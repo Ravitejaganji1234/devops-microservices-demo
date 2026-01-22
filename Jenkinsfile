@@ -17,6 +17,21 @@ pipeline {
             }
         }
 
+        stage('Login to Docker Hub') {
+    steps {
+        withCredentials([usernamePassword(
+            credentialsId: 'Docker-hub',
+            usernameVariable: 'DOCKER_USER',
+            passwordVariable: 'DOCKER_PASS'
+        )]) {
+            bat """
+            docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+            """
+        }
+    }
+}
+
+
         stage('Build Docker Images') {
             steps {
                 script {
