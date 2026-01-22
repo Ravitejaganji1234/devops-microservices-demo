@@ -93,25 +93,32 @@ pipeline {
         }
 
         stage('Update Kubernetes Manifests Repo') {
-            steps {
-                bat '''
-                rmdir /s /q microservices-k8s-manifests
-                git clone -b %K8S_BRANCH% %K8S_REPO_URL%
+    steps {
+        withCredentials([usernamePassword(
+            credentialsId: 'Github',
+            usernameVariable: 'GIT_USER',
+            passwordVariable: 'GIT_TOKEN'
+        )]) {
+            bat '''
+            rmdir /s /q microservices-k8s-manifests
+            git clone https://%GIT_USER%:%GIT_TOKEN%@github.com/Ravitejaganji1234/microservices-k8s-manifests.git
 
-                cd microservices-k8s-manifests
+            cd microservices-k8s-manifests
 
-                powershell -Command "(Get-Content dev/frontend/frontend.yaml) -replace 'image:.*', 'image: %REGISTRY%/frontend:%IMAGE_TAG%' | Set-Content dev/frontend/frontend.yaml"
-                powershell -Command "(Get-Content dev/order-service/order.yaml) -replace 'image:.*', 'image: %REGISTRY%/order-service:%IMAGE_TAG%' | Set-Content dev/order-service/order.yaml"
-                powershell -Command "(Get-Content dev/inventory-service/inventory.yaml) -replace 'image:.*', 'image: %REGISTRY%/inventory-service:%IMAGE_TAG%' | Set-Content dev/inventory-service/inventory.yaml"
+            powershell -Command "(Get-Content dev/frontend/frontend.yaml) -replace 'image:.*', 'image: %REGISTRY%/frontend:%IMAGE_TAG%' | Set-Content dev/frontend/frontend.yaml"
+            powershell -Command "(Get-Content dev/order-service/order.yaml) -replace 'image:.*', 'image: %REGISTRY%/order-service:%IMAGE_TAG%' | Set-Content dev/order-service/order.yaml"
+            powershell -Command "(Get-Content dev/inventory-service/inventory.yaml) -replace 'image:.*', 'image: %REGISTRY%/inventory-service:%IMAGE_TAG%' | Set-Content dev/inventory-service/inventory.yaml"
 
-                git config user.email "jenkins@ci.com"
-                git config user.name "jenkins"
+            git config user.email "jenkins@ci.com"
+            git config user.name "jenkins"
 
-                git add .
-                git commit -m "Update images to tag %IMAGE_TAG%"
-                git push origin %K8S_BRANCH% --verbose
-                '''
-            }
+            git add .
+            git commit -m "Update images to tag %IMAGE_TAG%"
+            git push origin main
+            '''
         }
+    }
+}
+
     }
 }
