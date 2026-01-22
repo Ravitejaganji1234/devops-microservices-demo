@@ -95,7 +95,7 @@ pipeline {
         stage('Update Kubernetes Manifests Repo') {
             steps {
                 bat '''
-                rmdir /s /q k8s-manifests
+                rmdir /s /q microservices-k8s-manifests
                 git clone -b %K8S_BRANCH% %K8S_REPO_URL%
 
                 cd microservices-k8s-manifests
