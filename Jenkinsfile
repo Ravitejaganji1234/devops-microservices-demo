@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY = "us-east1-docker.pkg.dev/raviteja-demo/demo-app"
+        REGISTRY     = "us-east1-docker.pkg.dev/raviteja-demo/demo-app"
         IMAGE_TAG    = "${BUILD_NUMBER}"
         K8S_REPO_URL = "https://github.com/Ravitejaganji1234/microservices-k8s-manifests.git"
         K8S_BRANCH   = "main"
@@ -17,30 +17,27 @@ pipeline {
             }
         }
 
-        stage('Login to Docker Hub') {
-    steps {
-        withCredentials([usernamePassword(
-            credentialsId: 'Docker-hub',
-            usernameVariable: 'DOCKER_USER',
-            passwordVariable: 'DOCKER_PASS'
-        )]) {
-            bat """
-            docker login -u %DOCKER_USER% -p %DOCKER_PASS%
-            """
+        stage('Login to Docker Hub (for base images)') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'Docker-hub',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    bat '''
+                    docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+                    '''
+                }
+            }
         }
-    }
-}
-
 
         stage('Build Docker Images') {
             steps {
-                script {
-                    bat """
-                      docker build -t $REGISTRY/frontend:$IMAGE_TAG frontend
-                      docker build -t $REGISTRY/order-service:$IMAGE_TAG order-service
-                      docker build -t $REGISTRY/inventory-service:$IMAGE_TAG inventory-service
-                    """
-                }
+                bat '''
+                docker build -t %REGISTRY%/frontend:%IMAGE_TAG% frontend
+                docker build -t %REGISTRY%/order-service:%IMAGE_TAG% order-service
+                docker build -t %REGISTRY%/inventory-service:%IMAGE_TAG% inventory-service
+                '''
             }
         }
 
@@ -56,23 +53,41 @@ pipeline {
             }
         }
 
-
-        stage('Push Images') {
+        stage('Force Docker Credential Helper (CRITICAL)') {
             steps {
-                script {
-                    bat """
-                      docker push $REGISTRY/frontend:$IMAGE_TAG
-                      docker push $REGISTRY/order-service:$IMAGE_TAG
-                      docker push $REGISTRY/inventory-service:$IMAGE_TAG
-                    """
-                }
+                bat '''
+                mkdir C:\\Windows\\System32\\config\\systemprofile\\.docker 2>NUL
+
+                echo {> C:\\Windows\\System32\\config\\systemprofile\\.docker\\config.json
+                echo   "credHelpers": {>> C:\\Windows\\System32\\config\\systemprofile\\.docker\\config.json
+                echo     "us-east1-docker.pkg.dev": "gcloud">> C:\\Windows\\System32\\config\\systemprofile\\.docker\\config.json
+                echo   }>> C:\\Windows\\System32\\config\\systemprofile\\.docker\\config.json
+                echo }>> C:\\Windows\\System32\\config\\systemprofile\\.docker\\config.json
+                '''
+            }
+        }
+
+        stage('Verify Docker Auth') {
+            steps {
+                bat '''
+                type C:\\Windows\\System32\\config\\systemprofile\\.docker\\config.json
+                '''
+            }
+        }
+
+        stage('Push Images to Artifact Registry') {
+            steps {
+                bat '''
+                docker push %REGISTRY%/frontend:%IMAGE_TAG%
+                docker push %REGISTRY%/order-service:%IMAGE_TAG%
+                docker push %REGISTRY%/inventory-service:%IMAGE_TAG%
+                '''
             }
         }
 
         stage('Update Kubernetes Manifests Repo') {
             steps {
-                script {
-                    bat """
+                bat '''
                 rmdir /s /q k8s-manifests
                 git clone -b %K8S_BRANCH% %K8S_REPO_URL%
 
@@ -88,8 +103,7 @@ pipeline {
                 git add .
                 git commit -m "Update images to tag %IMAGE_TAG%"
                 git push origin %K8S_BRANCH%
-                """
-                }
+                '''
             }
         }
     }
