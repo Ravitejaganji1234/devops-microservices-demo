@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        REGISTRY     = "gcr.io/YOUR_PROJECT_ID"
+        REGISTRY     = "gcr.io/raviteja-demo"
         IMAGE_TAG    = "${BUILD_NUMBER}"
         K8S_REPO_URL = "https://github.com/Ravitejaganji1234/microservices-k8s-manifests.git"
         K8S_BRANCH   = "main"
@@ -20,10 +20,10 @@ pipeline {
         stage('Build Docker Images') {
             steps {
                 script {
-                    sh """
-                      docker build -t $REGISTRY/frontend:$IMAGE_TAG ./frontend
-                      docker build -t $REGISTRY/order-service:$IMAGE_TAG ./order-service
-                      docker build -t $REGISTRY/inventory-service:$IMAGE_TAG ./inventory-service
+                    bat """
+                      docker build -t $REGISTRY/frontend:$IMAGE_TAG frontend
+                      docker build -t $REGISTRY/order-service:$IMAGE_TAG order-service
+                      docker build -t $REGISTRY/inventory-service:$IMAGE_TAG inventory-service
                     """
                 }
             }
@@ -32,7 +32,7 @@ pipeline {
         stage('Authenticate to GCP') {
             steps {
                 withCredentials([file(credentialsId: 'gcp-service-account', variable: 'GCP_KEY')]) {
-                    sh '''
+                    bat '''
                     gcloud auth activate-service-account --key-file=$GCP_KEY
                     gcloud config set project YOUR_PROJECT_ID
                     gcloud auth configure-docker --quiet
@@ -45,7 +45,7 @@ pipeline {
         stage('Push Images') {
             steps {
                 script {
-                    sh """
+                    bat """
                       docker push $REGISTRY/frontend:$IMAGE_TAG
                       docker push $REGISTRY/order-service:$IMAGE_TAG
                       docker push $REGISTRY/inventory-service:$IMAGE_TAG
@@ -57,23 +57,23 @@ pipeline {
         stage('Update Kubernetes Manifests Repo') {
             steps {
                 script {
-                    sh """
-                      rm -rf k8s-manifests
-                      git clone -b $K8S_BRANCH $K8S_REPO_URL
-                      
-                      cd k8s-manifests
+                    bat """
+                rmdir /s /q k8s-manifests
+                git clone -b %K8S_BRANCH% %K8S_REPO_URL%
 
-                      sed -i 's|image:.*frontend.*|image: $REGISTRY/frontend:$IMAGE_TAG|' dev/frontend/frontend.yaml
-                      sed -i 's|image:.*order-service.*|image: $REGISTRY/order-service:$IMAGE_TAG|' dev/order-service/order.yaml
-                      sed -i 's|image:.*inventory-service.*|image: $REGISTRY/inventory-service:$IMAGE_TAG|' dev/inventory-service/inventory.yaml
+                cd k8s-manifests
 
-                      git config user.email "jenkins@ci.com"
-                      git config user.name "jenkins"
+                powershell -Command "(Get-Content dev/frontend/frontend.yaml) -replace 'image:.*', 'image: %REGISTRY%/frontend:%IMAGE_TAG%' | Set-Content dev/frontend/frontend.yaml"
+                powershell -Command "(Get-Content dev/order-service/order.yaml) -replace 'image:.*', 'image: %REGISTRY%/order-service:%IMAGE_TAG%' | Set-Content dev/order-service/order.yaml"
+                powershell -Command "(Get-Content dev/inventory-service/inventory.yaml) -replace 'image:.*', 'image: %REGISTRY%/inventory-service:%IMAGE_TAG%' | Set-Content dev/inventory-service/inventory.yaml"
 
-                      git add .
-                      git commit -m "Update images to tag $IMAGE_TAG"
-                      git push origin $K8S_BRANCH
-                    """
+                git config user.email "jenkins@ci.com"
+                git config user.name "jenkins"
+
+                git add .
+                git commit -m "Update images to tag %IMAGE_TAG%"
+                git push origin %K8S_BRANCH%
+                """
                 }
             }
         }
