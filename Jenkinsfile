@@ -101,7 +101,7 @@ pipeline {
         )]) {
             bat '''
             rmdir /s /q microservices-k8s-manifests
-            git clone https://%GIT_USER%:%GIT_TOKEN%@github.com/Ravitejaganji1234/microservices-k8s-manifests.git
+            git clone %K8S_REPO_URL%
 
             cd microservices-k8s-manifests
 
