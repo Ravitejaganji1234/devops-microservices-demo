@@ -98,7 +98,7 @@ pipeline {
                 rmdir /s /q k8s-manifests
                 git clone -b %K8S_BRANCH% %K8S_REPO_URL%
 
-                cd k8s-manifests
+                cd microservices-k8s-manifests
 
                 powershell -Command "(Get-Content dev/frontend/frontend.yaml) -replace 'image:.*', 'image: %REGISTRY%/frontend:%IMAGE_TAG%' | Set-Content dev/frontend/frontend.yaml"
                 powershell -Command "(Get-Content dev/order-service/order.yaml) -replace 'image:.*', 'image: %REGISTRY%/order-service:%IMAGE_TAG%' | Set-Content dev/order-service/order.yaml"
@@ -109,7 +109,7 @@ pipeline {
 
                 git add .
                 git commit -m "Update images to tag %IMAGE_TAG%"
-                git push origin %K8S_BRANCH%
+                git push -u origin %K8S_BRANCH%
                 '''
             }
         }
