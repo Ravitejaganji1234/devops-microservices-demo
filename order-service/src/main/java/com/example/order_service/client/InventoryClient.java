@@ -12,7 +12,7 @@ public class InventoryClient {
 
     private static final String INVENTORY_URL =
 //            "http://localhost:8081/inventory/{productId}";
-              "http://host.docker.internal:8081/inventory/{productId}";
+              "http://inventory-service:8081/inventory/{productId}";
 
     public Integer getAvailableQuantity(String productId) {
 
