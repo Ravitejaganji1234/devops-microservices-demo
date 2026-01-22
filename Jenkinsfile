@@ -109,9 +109,6 @@ pipeline {
             powershell -Command "(Get-Content dev/order-service/order.yaml) -replace 'image:.*', 'image: %REGISTRY%/order-service:%IMAGE_TAG%' | Set-Content dev/order-service/order.yaml"
             powershell -Command "(Get-Content dev/inventory-service/inventory.yaml) -replace 'image:.*', 'image: %REGISTRY%/inventory-service:%IMAGE_TAG%' | Set-Content dev/inventory-service/inventory.yaml"
 
-            git config user.email "jenkins@ci.com"
-            git config user.name "jenkins"
-
             git add .
             git commit -m "Update images to tag %IMAGE_TAG%"
             git push origin main
