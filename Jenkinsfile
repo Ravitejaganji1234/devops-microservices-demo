@@ -17,16 +17,14 @@ pipeline {
             }
         }
 
-        stage('Login to Docker Hub (for base images)') {
+        stage('Login to Docker Hub (base images only)') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'Docker-hub',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    bat '''
-                    docker login -u %DOCKER_USER% -p %DOCKER_PASS%
-                    '''
+                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
                 }
             }
         }
@@ -47,31 +45,40 @@ pipeline {
                     bat '''
                     gcloud auth activate-service-account --key-file=%GCP_KEY%
                     gcloud config set project raviteja-demo
-                    gcloud auth configure-docker us-east1-docker.pkg.dev --quiet
                     '''
                 }
             }
         }
 
-        stage('Force Docker Credential Helper (CRITICAL)') {
+        stage('Configure Docker for Artifact Registry') {
+            steps {
+                bat '''
+                gcloud auth configure-docker us-east1-docker.pkg.dev --quiet
+                '''
+            }
+        }
+
+        stage('Force Docker Credential Helper (SYSTEM SAFE)') {
             steps {
                 bat '''
                 mkdir C:\\Windows\\System32\\config\\systemprofile\\.docker 2>NUL
 
-                echo {> C:\\Windows\\System32\\config\\systemprofile\\.docker\\config.json
-                echo   "credHelpers": {>> C:\\Windows\\System32\\config\\systemprofile\\.docker\\config.json
-                echo     "us-east1-docker.pkg.dev": "gcloud">> C:\\Windows\\System32\\config\\systemprofile\\.docker\\config.json
-                echo   }>> C:\\Windows\\System32\\config\\systemprofile\\.docker\\config.json
-                echo }>> C:\\Windows\\System32\\config\\systemprofile\\.docker\\config.json
+                (
+                echo {
+                echo   "credHelpers": {
+                echo     "us-east1-docker.pkg.dev": "gcloud"
+                echo   }
+                echo }
+                ) > C:\\Windows\\System32\\config\\systemprofile\\.docker\\config.json
+
+                exit /b 0
                 '''
             }
         }
 
         stage('Verify Docker Auth') {
             steps {
-                bat '''
-                type C:\\Windows\\System32\\config\\systemprofile\\.docker\\config.json
-                '''
+                bat 'type C:\\Windows\\System32\\config\\systemprofile\\.docker\\config.json'
             }
         }
 
