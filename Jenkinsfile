@@ -49,8 +49,8 @@ pipeline {
                 withCredentials([file(credentialsId: 'gcp-service-account', variable: 'GCP_KEY')]) {
                     bat '''
                     gcloud auth activate-service-account --key-file=%GCP_KEY%
-                    gcloud config set project YOUR_PROJECT_ID
-                    gcloud auth configure-docker --quiet
+                    gcloud config set project raviteja-demo
+                    gcloud auth configure-docker us-east1-docker.pkg.dev --quiet
                     '''
                 }
             }
