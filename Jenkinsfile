@@ -109,7 +109,7 @@ pipeline {
 
                 git add .
                 git commit -m "Update images to tag %IMAGE_TAG%"
-                git push -u origin %K8S_BRANCH%
+                git push  origin %K8S_BRANCH% --verbose
                 '''
             }
         }
