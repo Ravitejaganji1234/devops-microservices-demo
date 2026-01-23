@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const placeOrder = async (productId, quantity) => {
   const response = await axios.post(
-    "/api/orders/orders",
+    "/api/orders",
     {
       productId,
       quantity

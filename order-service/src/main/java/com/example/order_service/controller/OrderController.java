@@ -8,7 +8,7 @@ import java.util.Map;
 
 @CrossOrigin("http://frontend:5173")
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/api/orders")
 public class OrderController {
 
     private final OrderService service;
