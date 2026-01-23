@@ -180,25 +180,24 @@ pipeline {
         }
 
         stage('Update Kubernetes Manifests Repo') {
-            steps {
-                script {
-                    sh """
-                      rm -rf microservices-k8s-manifests
-                      git clone -b $K8S_BRANCH $K8S_REPO_URL
-                      
-                      cd microservices-k8s-manifests
+    steps {
+        sh '''
+          rm -rf microservices-k8s-manifests
+          git clone -b $K8S_BRANCH $K8S_REPO_URL
+          
+          cd microservices-k8s-manifests
 
-                      sed -i 's|image:.*frontend.*|image: $REGISTRY/frontend:$IMAGE_TAG|' dev/frontend/frontend.yaml
-                      sed -i 's|image:.*order-service.*|image: $REGISTRY/order-service:$IMAGE_TAG|' dev/order-service/order.yaml
-                      sed -i 's|image:.*inventory-service.*|image: $REGISTRY/inventory-service:$IMAGE_TAG|' dev/inventory-service/inventory.yaml
+          sed -i "s|image:.*frontend.*|image: $REGISTRY/frontend:$IMAGE_TAG|" dev/frontend/frontend.yaml
+          sed -i "s|image:.*order-service.*|image: $REGISTRY/order-service:$IMAGE_TAG|" dev/order-service/order.yaml
+          sed -i "s|image:.*inventory-service.*|image: $REGISTRY/inventory-service:$IMAGE_TAG|" dev/inventory-service/inventory.yaml
 
-                      git add .
-                      git commit -m "Update images to tag $IMAGE_TAG"
-                      git push origin $K8S_BRANCH
-                    """
-                }
-            }
-        }
+          git add .
+          git commit -m "Update images to tag $IMAGE_TAG" || echo "No changes to commit"
+          git push origin $K8S_BRANCH
+        '''
+    }
+}
+
     }
 }
 
