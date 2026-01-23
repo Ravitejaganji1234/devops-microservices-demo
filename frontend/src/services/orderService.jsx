@@ -1,10 +1,8 @@
 import axios from "axios";
 
-const ORDER_API_BASE_URL = "http://order-service:8082";
-
 export const placeOrder = async (productId, quantity) => {
   const response = await axios.post(
-    `${ORDER_API_BASE_URL}/orders`,
+    "/api/orders/orders",
     {
       productId,
       quantity
