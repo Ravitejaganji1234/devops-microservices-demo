@@ -182,22 +182,32 @@ pipeline {
 
         stage('Update Kubernetes Manifests Repo') {
     steps {
-        sh '''
-          rm -rf microservices-k8s-manifests
-          git clone -b $K8S_BRANCH $K8S_REPO_URL
-          
-          cd microservices-k8s-manifests
+        withCredentials([usernamePassword(
+            credentialsId: 'github-pat',
+            usernameVariable: 'GIT_USER',
+            passwordVariable: 'GIT_TOKEN'
+        )]) {
+            sh '''
+              rm -rf microservices-k8s-manifests
+              git clone https://$GIT_USER:$GIT_TOKEN@github.com/Ravitejaganji1234/microservices-k8s-manifests.git
+              
+              cd microservices-k8s-manifests
 
-          sed -i "s|image:.*frontend.*|image: $REGISTRY/frontend:$IMAGE_TAG|" dev/frontend/frontend.yaml
-          sed -i "s|image:.*order-service.*|image: $REGISTRY/order-service:$IMAGE_TAG|" dev/order-service/order.yaml
-          sed -i "s|image:.*inventory-service.*|image: $REGISTRY/inventory-service:$IMAGE_TAG|" dev/inventory-service/inventory.yaml
+              sed -i 's|image:.*frontend.*|image: '"$REGISTRY"'/frontend:'"$IMAGE_TAG"'|' dev/frontend/frontend.yaml
+              sed -i 's|image:.*order-service.*|image: '"$REGISTRY"'/order-service:'"$IMAGE_TAG"'|' dev/order-service/order.yaml
+              sed -i 's|image:.*inventory-service.*|image: '"$REGISTRY"'/inventory-service:'"$IMAGE_TAG"'|' dev/inventory-service/inventory.yaml
 
-          git add .
-          git commit -m "Update images to tag $IMAGE_TAG" || echo "No changes to commit"
-          git push origin $K8S_BRANCH
-        '''
+              git config user.email "jenkins@ci.com"
+              git config user.name "jenkins"
+
+              git add .
+              git commit -m "Update images to tag $IMAGE_TAG" || echo "No changes to commit"
+              git push origin main
+            '''
+        }
     }
 }
+
 
     }
 }
