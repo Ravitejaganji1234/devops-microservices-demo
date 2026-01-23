@@ -188,9 +188,9 @@ pipeline {
                       
                       cd microservices-k8s-manifests
 
-                      sed -i 's|image:.*frontend.*|image: $REGISTRY/frontend:$IMAGE_TAG|' dev/frontend/deployment.yaml
-                      sed -i 's|image:.*order-service.*|image: $REGISTRY/order-service:$IMAGE_TAG|' dev/order-service/deployment.yaml
-                      sed -i 's|image:.*inventory-service.*|image: $REGISTRY/inventory-service:$IMAGE_TAG|' dev/inventory-service/deployment.yaml
+                      sed -i 's|image:.*frontend.*|image: $REGISTRY/frontend:$IMAGE_TAG|' dev/frontend/frontend.yaml
+                      sed -i 's|image:.*order-service.*|image: $REGISTRY/order-service:$IMAGE_TAG|' dev/order-service/order.yaml
+                      sed -i 's|image:.*inventory-service.*|image: $REGISTRY/inventory-service:$IMAGE_TAG|' dev/inventory-service/inventory.yaml
 
                       git add .
                       git commit -m "Update images to tag $IMAGE_TAG"
