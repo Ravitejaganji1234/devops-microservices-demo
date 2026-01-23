@@ -9,7 +9,7 @@ COPY . .
 
 RUN mvn clean install -DskipTests
 
-ENV SPRING_DATASOURCE_URL=jdbc:mysql://host.docker.internal:3306/orderdb?createDatabaseIfNotExist=true
+ENV SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/orderdb?createDatabaseIfNotExist=true
 
 EXPOSE 8082
 
