@@ -127,7 +127,7 @@ pipeline {
     environment {
         PROJECT_ID = "raviteja-demo"
         REGION     = "us-east1"
-        REGISTRY     = "us-east1-docker.pkg.dev/raviteja-demo/demo-app"
+        REGISTRY     = "us-east1-docker.pkg.dev/raviteja-demo/jenkins-demo"
         IMAGE_TAG    = "${BUILD_NUMBER}"
         K8S_REPO_URL = "https://github.com/Ravitejaganji1234/microservices-k8s-manifests.git"
         K8S_BRANCH   = "main"
@@ -142,11 +142,6 @@ pipeline {
             }
         }
 
-        stage('Checking Build Number'){
-            steps{
-                echo '$IMAGE_TAG'
-            }
-        }
 
         stage('Build Docker Images') {
             steps {
